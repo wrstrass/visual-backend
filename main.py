@@ -68,6 +68,23 @@ async def initial():
             min=0,
             max=10,
         ),
+        Chart(
+            title="Each Dealer Money",
+            xLabel="Dealer",
+            yLabel="Money",
+            type="bar",
+            values=[10000 / 3] * 3,
+            min=0,
+            max=10000,
+        ),
+        Chart(
+            title="Dealer Max Amount",
+            xLabel="Dealer",
+            yLabel="Max Amount",
+            type="bar",
+            values=[int(10000 / 100)] * 3,
+            min=0,
+        )
     ]
 
 
