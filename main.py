@@ -54,6 +54,43 @@ class ChartChange(BaseModel):
     def change_dealer_max_amount_graph(self):
         self.charts[3].values = [int(self.S / 100)] * self.N
 
+    def calc_result(self, add: bool = False):
+        if add:
+            self.charts.append(None)
+
+        dealers_money, dealers_product = optimize_sum(
+            N=self.N,
+            s=self.S,
+            xE=[[i * self.S / 10 for i in range(11)]] * self.N,
+            yE=[y.values for y in self.charts[4:4+self.N]],
+            fixed_money={},
+            fixed_products={},
+            mode="many",
+        )
+
+        self.charts[-1] = Chart(
+            title="Dealer's Product",
+            xLabel="Dealer",
+            yLabel="Product",
+            type="bar",
+            values=dealers_product,
+            min=0,
+        )
+
+
+    def add_dealer_sell_graphs(self):
+        self.charts += [
+            Chart(
+                title="Dealer " + str(i + 1) + " sell graph",
+                xLabel="Money (step = " + str(self.S / 10) + "$)",
+                yLabel="Product Amount",
+                values=list(range(0, 110, 10)),
+                min=0,
+                max=self.charts[3].values[i],
+            )
+            for i in range(self.N)
+        ]
+
 
     @property
     def S(self):
@@ -126,38 +163,9 @@ async def change(chart_change: Request):
         chart_change.change_each_dealer_money_graph()
         chart_change.change_dealer_max_amount_graph()
 
-        chart_change.charts += [
-            Chart(
-                title="Dealer " + str(i + 1) + " sell graph",
-                xLabel="Money (step = " + str(chart_change.S / 10) + "$)",
-                yLabel="Product Amount",
-                values=list(range(0, 110, 10)),
-                min=0,
-                max=chart_change.charts[3].values[i],
-            )
-            for i in range(chart_change.N)
-        ]
+        chart_change.add_dealer_sell_graphs()
 
-        dealers_money, dealers_product = optimize_sum(
-            N=chart_change.N,
-            s=chart_change.S,
-            xE=[[i * chart_change.S / 10 for i in range(11)]] * chart_change.N,
-            yE=[y.values for y in chart_change.charts[4:4+chart_change.N]],
-            fixed_money={},
-            fixed_products={},
-            mode="many",
-        )
-
-        chart_change.charts.append(
-            Chart(
-                title="Dealer's Product",
-                xLabel="Dealer",
-                yLabel="Product",
-                type="bar",
-                values=dealers_product,
-                min=0,
-            )
-        )
+        chart_change.calc_result(add=True)
 
     print(chart_change.charts)
     return chart_change.charts
