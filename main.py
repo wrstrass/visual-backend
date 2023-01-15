@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from optimize import optimize_sum
+import translate
 
 
 app = FastAPI()
@@ -54,18 +54,14 @@ class ChartChange(BaseModel):
     def change_dealer_max_amount_graph(self):
         self.charts[3].values = [int(self.S / 100)] * self.N
 
-    def calc_result(self, add: bool = False):
+    def calc_result_product(self, add: bool = False):
         if add:
-            self.charts.append(None)
+            self.charts += [None, None]
 
-        dealers_money, dealers_product = optimize_sum(
-            N=self.N,
-            s=self.S,
+        dealers_product = translate.product_from_sum(
+            S=self.charts[2].values,
             xE=[[i * self.S / 10 for i in range(11)]] * self.N,
             yE=[y.values for y in self.charts[4:4+self.N]],
-            fixed_money={},
-            fixed_products={},
-            mode="many",
         )
 
         # algo debug prints
@@ -73,12 +69,21 @@ class ChartChange(BaseModel):
         print([y.values for y in self.charts[4:4+self.N]])
         print(dealers_product)
 
-        self.charts[-1] = Chart(
+        self.charts[-2] = Chart(
             title="Dealer's Product",
             xLabel="Dealer",
             yLabel="Product",
             type="bar",
             values=dealers_product,
+            min=0,
+        )
+
+        self.charts[-1] = Chart(
+            title="Dealer's Product Percentage (FIXED)",
+            xLabel="Dealer",
+            yLabel="Product %",
+            type="bar",
+            values=translate.get_percentage(dealers_product),
             min=0,
         )
 
@@ -154,7 +159,7 @@ async def change(chart_change: Request):
 
     column, delta = chart_change.detect_change()
     if column == None and chart_change.index == 1:
-        column = 1
+        column = 0
     print(chart_change.index, column, delta)
 
     redraw = {
@@ -175,12 +180,10 @@ async def change(chart_change: Request):
         chart_change.change_dealer_max_amount_graph()
         chart_change.add_dealer_sell_graphs()
 
-        redraw["result"] = {
-            "add": True
-        }
+        chart_change.calc_result_product(add=True)
 
-    if redraw["result"] != False:
-        chart_change.calc_result(**redraw["result"])
+    # if redraw["result"] != False:
+    #     chart_change.calc_result(**redraw["result"])
 
     # print(chart_change.charts)
     return chart_change.charts
