@@ -1,6 +1,10 @@
 from ortools.linear_solver import pywraplp
 
 
+def product_count_to_percent(products: list[int]):
+    return [product / sum(products) * 100 for product in products]
+
+
 def optimize_sum(N: int, s: int, xE: list[list[int]], yE: list[list[int]],
                  fixed_money: dict[int, int], fixed_products: dict[int, int], mode='one'):
     """
