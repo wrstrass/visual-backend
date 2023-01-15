@@ -129,7 +129,7 @@ async def change(chart_change: Request):
                 title="Dealer " + str(i + 1) + " sell graph",
                 xLabel="Money (step = " + str(chart_change.S / 10) + "$)",
                 yLabel="Product Amount",
-                values=[10 * j for j in range(11)],
+                values=list(range(0, 110, 10)),
                 min=0,
                 max=chart_change.charts[3].values[i],
             )
