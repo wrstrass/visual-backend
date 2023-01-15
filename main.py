@@ -68,6 +68,11 @@ class ChartChange(BaseModel):
             mode="many",
         )
 
+        # algo debug prints
+        print([[i * self.S / 10 for i in range(11)]] * self.N)
+        print([y.values for y in self.charts[4:4+self.N]])
+        print(dealers_product)
+
         self.charts[-1] = Chart(
             title="Dealer's Product",
             xLabel="Dealer",
@@ -151,9 +156,17 @@ async def change(chart_change: Request):
         column = 1
     print(column, delta)
 
+    redraw = {
+        "summ": False,
+        "dealers_money": False,
+        "dealer_sell_graph": False,
+        "result": False,
+    }
+
     # reference columns don't change
     if not ((chart_change.index == 0 or chart_change.index == 1) and column == 0):
         chart_change.apply_change()
+        redraw["result"] = {}
 
     # N changed
     if chart_change.index == 1 and column == 1:
@@ -162,10 +175,14 @@ async def change(chart_change: Request):
 
         chart_change.change_each_dealer_money_graph()
         chart_change.change_dealer_max_amount_graph()
-
         chart_change.add_dealer_sell_graphs()
 
-        chart_change.calc_result(add=True)
+        redraw["result"] = {
+            "add": True
+        }
+
+    if redraw["result"] != False:
+        chart_change.calc_result(**redraw["result"])
 
     print(chart_change.charts)
     return chart_change.charts
