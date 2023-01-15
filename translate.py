@@ -18,7 +18,7 @@ def product_from_sum(S: list[int], xE: list[list[int]], yE: list[list[int]]):
     Product count list.
     """
 
-    E_funcs = [interp1d(xE[i], yE[i], kind='cubic') for i in range(len(xE))]
+    E_funcs = [interp1d(xE[i], yE[i], kind="cubic") for i in range(len(xE))]
     return [int(E_funcs[i](S[i])) for i in range(len(S))]
 
 
@@ -35,5 +35,5 @@ def sum_from_product(P: list[int], xE: list[list[int]], yE: list[list[int]]):
     Sums amount list.
     """
 
-    E_funcs = [interp1d(yE[i], xE[i], kind='cubic') for i in range(len(xE))]
+    E_funcs = [interp1d(yE[i], xE[i], kind="cubic") for i in range(len(xE))]
     return [int(E_funcs[i](P[i])) for i in range(len(P))]
