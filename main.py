@@ -43,6 +43,16 @@ class ChartChange(BaseModel):
     def apply_change(self):
         self.charts[self.index].values = self.values
 
+
+    def change_each_dealer_money_graph(self, arg: float | None = None):
+        if arg == None:
+            self.charts[2].max = self.S
+            self.charts[2].values = [self.S / self.N] * self.N
+
+    def change_dealer_max_amount_graph(self):
+        self.charts[3].values = [int(self.S / 100)] * self.N
+
+
     @property
     def S(self):
         return self.charts[0].values[1]
@@ -108,30 +118,11 @@ async def change(chart_change: Request):
 
     # N changed
     if chart_change.index == 1 and column == 1:
-        chart_change.charts = chart_change.charts[:2]
+        chart_change.charts = chart_change.charts[:4]
         print(chart_change.S, chart_change.N)
 
-        chart_change.charts.append(
-            Chart(
-                title="Each Dealer Money",
-                xLabel="Dealer",
-                yLabel="Money",
-                type="bar",
-                values=[chart_change.S / chart_change.N] * chart_change.N,
-                min=0,
-                max=chart_change.S,
-            )
-        )
-        chart_change.charts.append(
-            Chart(
-                title="Dealer Max Amount",
-                xLabel="Dealer",
-                yLabel="Max Amount",
-                type="bar",
-                values=[int(chart_change.S / 100)] * chart_change.N,
-                min=0,
-            )
-        )
+        chart_change.change_each_dealer_money_graph()
+        chart_change.change_dealer_max_amount_graph()
 
         chart_change.charts += [
             Chart(
