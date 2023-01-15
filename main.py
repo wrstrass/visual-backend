@@ -99,11 +99,11 @@ class ChartChange(BaseModel):
 
     @property
     def S(self):
-        return self.charts[0].values[1]
+        return self.charts[0].values[0]
 
     @property
     def N(self):
-        return self.charts[1].values[1]
+        return self.charts[1].values[0]
 
 
 @app.get("/api")
@@ -112,13 +112,14 @@ async def initial():
         Chart(
             title="Money",
             type="bar",
-            values=[10000, 10000],
+            values=[10000,],
             min=0,
+            max=50000,
         ),
         Chart(
             title="Dealers Amount",
             type="bar",
-            values=[3, 3],
+            values=[3,],
             min=0,
             max=10,
         ),
@@ -149,27 +150,24 @@ async def change(chart_change: Request):
         chart_change = ChartChange(**chart_change)
     except Exception as exc:
         return {"exc": str(exc)}
-    print(chart_change)
+    # print(chart_change)
 
     column, delta = chart_change.detect_change()
     if column == None and chart_change.index == 1:
         column = 1
-    print(column, delta)
+    print(chart_change.index, column, delta)
 
     redraw = {
         "summ": False,
         "dealers_money": False,
         "dealer_sell_graph": False,
-        "result": False,
+        "result": {},
     }
 
-    # reference columns don't change
-    if not ((chart_change.index == 0 or chart_change.index == 1) and column == 0):
-        chart_change.apply_change()
-        redraw["result"] = {}
+    chart_change.apply_change()
 
     # N changed
-    if chart_change.index == 1 and column == 1:
+    if chart_change.index == 1 and column == 0:
         chart_change.charts = chart_change.charts[:4]
         print(chart_change.S, chart_change.N)
 
@@ -184,5 +182,5 @@ async def change(chart_change: Request):
     if redraw["result"] != False:
         chart_change.calc_result(**redraw["result"])
 
-    print(chart_change.charts)
+    # print(chart_change.charts)
     return chart_change.charts
