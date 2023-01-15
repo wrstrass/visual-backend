@@ -10,6 +10,7 @@ packages = [{include = "visual_backend"}]
 python = "^3.10"
 fastapi = "^0.89.1"
 uvicorn = {extras = ["standard"], version = "^0.20.0"}
+ortools = "^9.5.2237"
 
 
 [build-system]

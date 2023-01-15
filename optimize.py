@@ -1,8 +1,15 @@
 from ortools.linear_solver import pywraplp
 
 
-def optimize_sum(N: int, s: int, xE: list[list[int]], yE: list[list[int]],
-                 fixed_money: dict[int, int], fixed_products: dict[int, int], mode='one'):
+def optimize_sum(
+    N: int,
+    s: int,
+    xE: list[list[int]],
+    yE: list[list[int]],
+    fixed_money: dict[int, int],
+    fixed_products: dict[int, int],
+    mode="one",
+):
     """
     PARAMETERS:
 
@@ -54,7 +61,14 @@ def optimize_sum(N: int, s: int, xE: list[list[int]], yE: list[list[int]],
 
     solver.Add(sum([x[i] for i in range(N - len(fixed_money))]) == s)
 
-    solver.Maximize(sum([_linear_interpolate(x[i], cut_x_axis[i], cut_y_axis[i]) for i in range(N - len(fixed_money))]))
+    solver.Maximize(
+        sum(
+            [
+                _linear_interpolate(x[i], cut_x_axis[i], cut_y_axis[i])
+                for i in range(N - len(fixed_money))
+            ]
+        )
+    )
 
     solver.Solve()
 
@@ -80,18 +94,28 @@ def _create_axis(N: int, xE: list[list[int]], yE: list[list[int]], mode: str):
 def _product_to_money(product_value: int, x_axis: list[int], y_axis: list[int]):
     for i in range(len(y_axis) - 1):
         if y_axis[i] <= product_value <= y_axis[i + 1]:
-            return (x_axis[i + 1] - x_axis[i]) * (product_value - y_axis[i]) // (y_axis[i + 1] - y_axis[i]) + x_axis[i]
+            return (x_axis[i + 1] - x_axis[i]) * (product_value - y_axis[i]) // (
+                y_axis[i + 1] - y_axis[i]
+            ) + x_axis[i]
     raise ValueError("product_value not in right interval")
 
 
 def _linear_interpolate(x_val, x_axis: list[int], y_axis: list[int]):
     for i in range(len(x_axis) - 1):
         if x_axis[i] <= x_val <= x_axis[i + 1]:
-            return (y_axis[i + 1] - y_axis[i]) * (x_val - x_axis[i]) / (x_axis[i + 1] - x_axis[i]) + y_axis[i]
+            return (y_axis[i + 1] - y_axis[i]) * (x_val - x_axis[i]) / (
+                x_axis[i + 1] - x_axis[i]
+            ) + y_axis[i]
     raise ValueError("x_val not in right interval")
 
 
-def _get_res(N: int, x_axis: list[list[int]], y_axis: list[list[int]], fixed_money: dict[int, int], x: list):
+def _get_res(
+    N: int,
+    x_axis: list[list[int]],
+    y_axis: list[list[int]],
+    fixed_money: dict[int, int],
+    x: list,
+):
     moneys = []
     fixed_count = 0
     for i in range(N):
@@ -100,7 +124,9 @@ def _get_res(N: int, x_axis: list[list[int]], y_axis: list[list[int]], fixed_mon
             fixed_count += 1
             continue
         moneys.append(int(x[i - fixed_count].solution_value()))
-    return moneys, [int(_linear_interpolate(moneys[i], x_axis[i], y_axis[i])) for i in range(N)]
+    return moneys, [
+        int(_linear_interpolate(moneys[i], x_axis[i], y_axis[i])) for i in range(N)
+    ]
 
 
 # if __name__ == "__main__":

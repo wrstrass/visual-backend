@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from optimize import optimize_sum
+
 
 app = FastAPI()
 
@@ -135,6 +137,27 @@ async def change(chart_change: Request):
             )
             for i in range(chart_change.N)
         ]
+
+        dealers_money, dealers_product = optimize_sum(
+            N=chart_change.N,
+            s=chart_change.S,
+            xE=[[i * chart_change.S / 10 for i in range(11)]] * chart_change.N,
+            yE=[y.values for y in chart_change.charts[4:4+chart_change.N]],
+            fixed_money={},
+            fixed_products={},
+            mode="many",
+        )
+
+        chart_change.charts.append(
+            Chart(
+                title="Dealer's Product",
+                xLabel="Dealer",
+                yLabel="Product",
+                type="bar",
+                values=dealers_product,
+                min=0,
+            )
+        )
 
     print(chart_change.charts)
     return chart_change.charts
